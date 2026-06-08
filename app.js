@@ -61,7 +61,7 @@ function createItem() {
   return {
     id: createId("item"),
     title: "Agenda item",
-    durationMode: "auto",
+    durationMode: "manual",
     plannedMinutes: 5,
     completed: false
   };
@@ -266,7 +266,7 @@ function renderEnded() {
 }
 
 function renderAgendaStack() {
-  var box = div("agenda-box");
+  var box = div("agenda-box" + (state.mode === "setup" ? " setup-box" : ""));
   box.setAttribute("aria-label", "Visual meeting agenda");
   var blocks = calculateVisualBlocks();
   if (blocks.length === 0) {
@@ -287,7 +287,11 @@ function renderAgendaStack() {
 
 function renderBlock(blockData) {
   var block = div("agenda-block " + blockData.status);
-  block.style.flexBasis = safePercent(blockData.heightPercent) + "%";
+  if (state.mode === "setup") {
+    block.style.flexBasis = "auto";
+  } else {
+    block.style.flexBasis = safePercent(blockData.heightPercent) + "%";
+  }
   block.setAttribute("aria-label", blockData.title + ", " + statusLabel(blockData.status));
   var fill = div("fill");
   fill.style.height = safePercent(blockData.fillPercent) + "%";
@@ -314,7 +318,10 @@ function renderSetupItemForm(itemId) {
     saveState();
   }));
   var controls = div("setup-controls");
-  controls.appendChild(labelSelect("Duration mode", item.durationMode, ["auto", "manual"], function (value) {
+  controls.appendChild(labelSelect("Duration mode", item.durationMode, [
+    { value: "manual", label: "Planned minutes" },
+    { value: "auto", label: "Split remaining time" }
+  ], function (value) {
     item.durationMode = value === "manual" ? "manual" : "auto";
     saveState();
     render();
@@ -742,10 +749,12 @@ function labelSelect(labelText, value, options, onChange) {
   label.textContent = labelText;
   var select = document.createElement("select");
   select.id = id;
-  options.forEach(function (optionValue) {
+  options.forEach(function (optionItem) {
+    var optionValue = typeof optionItem === "string" ? optionItem : optionItem.value;
+    var optionLabel = typeof optionItem === "string" ? optionItem.charAt(0).toUpperCase() + optionItem.slice(1) : optionItem.label;
     var option = document.createElement("option");
     option.value = optionValue;
-    option.textContent = optionValue.charAt(0).toUpperCase() + optionValue.slice(1);
+    option.textContent = optionLabel;
     select.appendChild(option);
   });
   select.value = value;

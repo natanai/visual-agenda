@@ -207,3 +207,31 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
 .summary-list { padding-left: 1.1rem; }
 
 .fatal-error { white-space: pre-wrap; background: var(--off-topic-color); }
+
+.agenda-box.setup-box {
+  overflow-y: auto;
+  align-items: stretch;
+}
+
+.agenda-box.setup-box .agenda-block {
+  flex: 0 0 auto;
+  min-height: 260px;
+  overflow: visible;
+}
+
+.agenda-box.setup-box .fill {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .agenda-box.setup-box {
+    height: auto;
+    max-height: none;
+    min-height: 420px;
+    overflow: visible;
+  }
+
+  .agenda-box.setup-box .agenda-block {
+    min-height: 0;
+  }
+}
