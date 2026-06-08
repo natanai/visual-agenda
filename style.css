@@ -224,7 +224,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
 .primary { background: var(--text-color); color: var(--background-color); }
 .danger { background: var(--off-topic-color); }
 .full-button { width: 100%; border-radius: var(--border-radius); }
-.add-after-first { min-height: 38px; padding: 0.4rem 0.75rem; }
+.add-after-last { min-height: 38px; padding: 0.4rem 0.75rem; }
 
 .setup-item-form {
   position: relative;
@@ -282,7 +282,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
 
 .item-actions { margin-top: 0.1rem; }
 .item-actions .done-action { margin-left: auto; }
-.add-after-first { margin: 0.1rem 0 0.35rem; }
+.add-after-last { margin: 0.1rem 0 0.35rem; }
 
 .reorder-controls {
   display: inline-flex;

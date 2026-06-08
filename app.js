@@ -277,12 +277,12 @@ function renderAgendaStack() {
     box.appendChild(empty);
     return box;
   }
-  blocks.forEach(function (blockData, index) {
+  blocks.forEach(function (blockData) {
     box.appendChild(renderBlock(blockData));
-    if (state.mode === "setup" && index === 0) {
-      box.appendChild(button("+ Add Agenda Item", function () { addItem(); }, "full-button add-after-first"));
-    }
   });
+  if (state.mode === "setup") {
+    box.appendChild(button("+ Add Agenda Item", function () { addItem(); }, "full-button add-after-last"));
+  }
   return box;
 }
 
