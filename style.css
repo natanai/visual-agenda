@@ -94,9 +94,12 @@ summary:focus-visible {
 }
 
 .meeting-controls-row {
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.5rem;
+  align-items: stretch;
+  justify-items: stretch;
 }
 
 .paused-controls-row {
@@ -104,6 +107,7 @@ summary:focus-visible {
 }
 
 .control-button {
+  width: 100%;
   min-width: 0;
   min-height: 58px;
   padding: 0.5rem 0.45rem;
@@ -115,6 +119,10 @@ summary:focus-visible {
   border-radius: calc(var(--border-radius) * 1.15);
   box-shadow: inset 0 -2px 0 rgba(31, 31, 31, 0.12);
   text-align: center;
+}
+
+.end-control {
+  background: var(--pending-color);
 }
 
 .control-icon {
@@ -541,25 +549,24 @@ input:disabled {
 }
 
 @media (max-width: 520px) {
+  .meeting-controls-panel {
+    left: max(0.35rem, env(safe-area-inset-left));
+    right: max(0.35rem, env(safe-area-inset-right));
+    padding: 0.5rem;
+  }
+
   .meeting-controls-row {
-    gap: 0.35rem;
+    gap: 0.4rem;
   }
 
   .control-button {
-    min-height: 56px;
-    gap: 0;
+    min-height: 60px;
+    padding: 0.45rem 0.2rem;
   }
 
   .control-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    font-size: clamp(0.58rem, 2.6vw, 0.72rem);
+    letter-spacing: -0.03em;
   }
 }
 
@@ -573,5 +580,7 @@ input:disabled {
     min-height: 320px;
   }
 
-  .control-icon { width: 1.2rem; height: 1.2rem; }
+  .meeting-controls-row { gap: 0.3rem; }
+  .control-icon { width: 1.18rem; height: 1.18rem; }
+  .control-label { font-size: 0.58rem; }
 }

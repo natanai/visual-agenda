@@ -228,7 +228,7 @@ function renderRunningSidePanel() {
   row.appendChild(controlButton("check", "Done", "Complete current item and move to the next item", doneNext, "primary", { disableOnClick: true }));
   row.appendChild(controlButton(state.isOffTopic ? "undo" : "offTopic", state.isOffTopic ? "Back" : "Off Topic", state.isOffTopic ? "Return to the agenda topic" : "Track time as off topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
   row.appendChild(controlButton("pause", "Pause", "Pause meeting timer", pauseMeeting));
-  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting));
+  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting, "end-control"));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -246,7 +246,7 @@ function renderPaused() {
   panel.appendChild(paragraph("Timing is paused. Resume to continue the current segment.", "muted meeting-controls-note"));
   var row = div("button-row meeting-controls-row paused-controls-row");
   row.appendChild(controlButton("play", "Resume", "Resume meeting timer", resumeMeeting, "primary"));
-  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting));
+  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting, "end-control"));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -890,7 +890,7 @@ function iconSvg(name) {
   svg.setAttribute("aria-hidden", "true");
   var paths = {
     check: "M5 12.5l4.2 4.2L19 6.9",
-    offTopic: "M12 4v16M4 12h16M7.8 7.8l8.4 8.4M16.2 7.8l-8.4 8.4",
+    offTopic: "M4 12h6c3 0 3-5 6-5h3M16 4l3 3-3 3M10 12c3 0 3 5 6 5h3M16 14l3 3-3 3",
     undo: "M9 7H5v4M5 7l5.5 5.5A5 5 0 1 0 14 4",
     pause: "M8 5v14M16 5v14",
     play: "M8 5v14l11-7z",
