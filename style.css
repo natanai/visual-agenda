@@ -182,6 +182,37 @@ p { margin-top: 0; }
   text-align: right;
 }
 
+.active-block-inline {
+  justify-content: flex-start;
+}
+
+.active-block-inline .block-inline-side {
+  display: none;
+}
+
+.active-inline-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.active-timer-stack {
+  flex: 0 0 auto;
+  line-height: 1.05;
+}
+
+.active-total-time {
+  color: var(--muted-text-color);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.active-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @media (max-width: 520px) {
   .block-inline {
     gap: 0.35rem;

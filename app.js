@@ -322,8 +322,19 @@ function renderInlineBlockLabel(blockData) {
     left.textContent = "Done " + blockData.title;
     right.textContent = formatDuration(blockData.actualSeconds);
   } else if (blockData.status === "active") {
-    left.textContent = formatDuration(Math.max(0, blockData.plannedSeconds - blockData.actualSeconds)) + " available · " + blockData.title;
-    right.textContent = formatDuration(blockData.actualSeconds) + " elapsed";
+    row.className += " active-block-inline";
+    left.className += " active-inline-main";
+    var remainingSeconds = blockData.plannedSeconds - blockData.actualSeconds;
+    var timerStack = div("active-timer-stack");
+    var activeTime = div("active-time");
+    activeTime.textContent = formatSignedDuration(remainingSeconds) + " available";
+    timerStack.appendChild(activeTime);
+    if (remainingSeconds < 0) {
+      timerStack.appendChild(textDiv("(" + formatDuration(blockData.actualSeconds) + " total time)", "active-total-time"));
+    }
+    left.appendChild(timerStack);
+    left.appendChild(textDiv(blockData.title, "active-title"));
+    right.textContent = "";
   } else {
     left.textContent = formatDuration(blockData.visualSeconds) + " available · " + blockData.title;
     right.textContent = "";
@@ -619,7 +630,7 @@ function blockObject(id, type, title, status, plannedSeconds, actualSeconds, vis
 
 function offTopicBlock(segment) {
   var actual = getSegmentDuration(segment);
-  return blockObject(segment.id, "offTopic", "Off topic", "off-topic", 0, actual, actual, 100);
+  return blockObject(segment.id, "offTopic", "Off topic", "off-topic", 0, actual, actual, 0);
 }
 
 function withHeights(blocks) {
@@ -787,7 +798,9 @@ function manageTimer() {
   if (state.mode === "running" && !timerId) {
     timerId = setInterval(function () {
       state.now = Date.now();
-      if (!isCustomizerControlActive()) {
+      if (isCustomizerControlActive()) {
+        refreshAgendaPanel();
+      } else {
         render();
       }
     }, 500);
@@ -798,6 +811,16 @@ function manageTimer() {
   }
 }
 
+function refreshAgendaPanel() {
+  var agendaPanel = document.querySelector(".agenda-panel");
+  if (!agendaPanel) {
+    render();
+    return;
+  }
+  agendaPanel.textContent = "";
+  agendaPanel.appendChild(renderAgendaStack());
+}
+
 function formatDuration(seconds) {
   var total = Math.max(0, Math.round(safeNumber(seconds)));
   var hours = Math.floor(total / 3600);
@@ -806,6 +829,13 @@ function formatDuration(seconds) {
   if (hours > 0) return hours + "h " + pad(minutes) + "m";
   if (minutes > 0) return minutes + "m " + pad(secs) + "s";
   return secs + "s";
+}
+
+function formatSignedDuration(seconds) {
+  var number = Number(seconds);
+  if (!isFinite(number)) number = 0;
+  var prefix = number < 0 ? "-" : "";
+  return prefix + formatDuration(Math.abs(number));
 }
 
 function pad(number) { return number < 10 ? "0" + number : String(number); }
