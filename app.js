@@ -216,7 +216,6 @@ function renderRunning() {
   var side = div("side-panel");
   var panel = div("panel");
   panel.appendChild(heading("h2", state.meetingTitle));
-  panel.appendChild(statusText());
   var row = div("button-row");
   row.appendChild(button("Done / Next", doneNext, "primary"));
   row.appendChild(button(state.isOffTopic ? "Back to Topic" : "Off Topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
@@ -298,19 +297,39 @@ function renderBlock(blockData) {
   fill.style.height = safePercent(blockData.fillPercent) + "%";
   block.appendChild(fill);
   var content = div("block-content");
-  content.appendChild(textDiv(statusLabel(blockData.status), "block-status"));
   if (state.mode === "setup" && blockData.type === "agenda") {
+    content.appendChild(textDiv(statusLabel(blockData.status), "block-status"));
     content.appendChild(renderSetupItemForm(blockData.id));
   } else {
-    content.appendChild(textDiv(blockData.title, "block-title"));
-    var meta = "Planned " + formatDuration(blockData.plannedSeconds) + " · Actual " + formatDuration(blockData.actualSeconds);
-    if (blockData.status === "pending") meta = "Planned " + formatDuration(blockData.plannedSeconds) + " · Time available " + formatDuration(blockData.visualSeconds);
-    if (blockData.status === "active") meta = "Planned " + formatDuration(blockData.plannedSeconds) + " · Used " + formatDuration(blockData.actualSeconds) + " · Item time left " + formatDuration(Math.max(0, blockData.plannedSeconds - blockData.actualSeconds));
-    if (blockData.type === "offTopic") meta = "Consumed " + formatDuration(blockData.actualSeconds);
-    content.appendChild(textDiv(meta, "block-meta"));
+    content.className += " block-content-line";
+    content.appendChild(renderInlineBlockLabel(blockData));
   }
   block.appendChild(content);
   return block;
+}
+
+function renderInlineBlockLabel(blockData) {
+  var row = div("block-inline");
+  var left = div("block-inline-main");
+  var right = div("block-inline-side");
+  if (blockData.type === "offTopic") {
+    left.textContent = "Off topic";
+    right.textContent = formatDuration(blockData.actualSeconds);
+  } else if (blockData.status === "completed") {
+    left.textContent = "Done " + blockData.title;
+    right.textContent = formatDuration(blockData.actualSeconds);
+  } else if (blockData.status === "active") {
+    left.textContent = formatDuration(Math.max(0, blockData.plannedSeconds - blockData.actualSeconds)) + " available · " + blockData.title;
+    right.textContent = formatDuration(blockData.actualSeconds) + " elapsed";
+  } else {
+    left.textContent = formatDuration(blockData.visualSeconds) + " available · " + blockData.title;
+    right.textContent = "";
+  }
+  left.title = left.textContent;
+  right.title = right.textContent;
+  row.appendChild(left);
+  row.appendChild(right);
+  return row;
 }
 
 function renderSetupItemForm(itemId) {
@@ -683,42 +702,13 @@ function deleteItem(itemId) {
   render();
 }
 
-function statusText() {
-  var wrap = div("status-stack");
-  wrap.setAttribute("aria-live", "polite");
-  var active = findItem(state.activeItemId);
-  var modeText = state.isOffTopic ? "Off topic during " : "On topic: ";
-  wrap.appendChild(paragraph(modeText + (active ? active.title : "No active item") + " · Elapsed " + formatDuration(getTotalElapsedSeconds()) + " · Off topic " + formatDuration(getOffTopicSeconds()), "status-line"));
-  var budget = getAvailableTimeSnapshot();
-  var available = paragraph("Future time available: " + formatDuration(budget.availableSeconds) + " of " + formatDuration(budget.plannedPendingSeconds) + " planned for remaining agenda items.", "time-available");
-  wrap.appendChild(available);
-  if (budget.availableSeconds < budget.plannedPendingSeconds) {
-    wrap.appendChild(paragraph("Future agenda time has lost " + formatDuration(budget.plannedPendingSeconds - budget.availableSeconds) + " to overtime or off-topic discussion.", "warning compact-warning"));
-  }
-  return wrap;
-}
-
-function getAvailableTimeSnapshot() {
-  var blocks = calculateVisualBlocks();
-  var plannedPendingSeconds = 0;
-  var availableSeconds = 0;
-  blocks.forEach(function (block) {
-    if (block.type === "agenda" && block.status === "pending") {
-      plannedPendingSeconds += block.plannedSeconds;
-      availableSeconds += block.visualSeconds;
-    }
-  });
-  return {
-    plannedPendingSeconds: plannedPendingSeconds,
-    availableSeconds: availableSeconds
-  };
-}
-
 function manageTimer() {
   if (state.mode === "running" && !timerId) {
     timerId = setInterval(function () {
       state.now = Date.now();
-      render();
+      if (!isCustomizerControlActive()) {
+        render();
+      }
     }, 500);
   }
   if (state.mode !== "running" && timerId) {
@@ -743,8 +733,9 @@ function safeNumber(value) { return isFinite(Number(value)) && Number(value) > 0
 function safePercent(value) { return Math.max(0, Math.min(100, safeNumber(value))); }
 function clampNumber(value, min, max, fallback) { var number = Number(value); return isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback; }
 function sanitizeMinutes(value, fallback) { return clampNumber(value, 0, 1440, fallback); }
-function setThemeValue(key, value) { state.isCustomizerOpen = true; state.theme[key] = value; state.theme = validateTheme(state.theme, state.theme); saveState(); render(); }
+function setThemeValue(key, value) { state.isCustomizerOpen = true; state.theme[key] = value; state.theme = validateTheme(state.theme, state.theme); applyTheme(); saveState(); }
 function statusLabel(status) { return status === "off-topic" ? "Off topic" : status.charAt(0).toUpperCase() + status.slice(1); }
+function isCustomizerControlActive() { return !!(document.activeElement && document.activeElement.closest && document.activeElement.closest(".customizer")); }
 
 function div(className) { var el = document.createElement("div"); if (className) el.className = className; return el; }
 function textDiv(text, className) { var el = div(className); el.textContent = text; return el; }

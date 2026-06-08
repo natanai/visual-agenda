@@ -150,6 +150,50 @@ p { margin-top: 0; }
 .block-meta { color: var(--muted-text-color); font-size: 0.93rem; }
 .block-status { text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.76rem; font-weight: 800; }
 
+.block-content-line {
+  min-width: 0;
+}
+
+.block-inline {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.block-inline-main,
+.block-inline-side {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.block-inline-main {
+  min-width: 0;
+  font-weight: 800;
+}
+
+.block-inline-side {
+  flex: 0 1 auto;
+  max-width: 45%;
+  color: var(--muted-text-color);
+  font-size: 0.93rem;
+  text-align: right;
+}
+
+@media (max-width: 520px) {
+  .block-inline {
+    gap: 0.35rem;
+  }
+
+  .block-inline-side {
+    max-width: 38%;
+    font-size: 0.82rem;
+  }
+}
+
 .form-grid { display: grid; gap: 0.85rem; }
 @media (min-width: 560px) { .form-grid.two { grid-template-columns: 1fr 180px; } }
 
@@ -169,7 +213,7 @@ textarea { min-height: 8rem; resize: vertical; }
 .button-row { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; margin-top: 1rem; }
 button {
   border: var(--border-width) solid var(--border-color);
-  border-radius: 999px;
+  border-radius: var(--border-radius);
   background: var(--surface-color);
   min-height: 46px;
   padding: 0.65rem 1rem;
@@ -180,7 +224,7 @@ button:hover { transform: translateY(-1px); }
 button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
 .primary { background: var(--text-color); color: var(--background-color); }
 .danger { background: var(--off-topic-color); }
-.full-button { width: 100%; border-radius: calc(var(--border-radius) * 0.75); }
+.full-button { width: 100%; border-radius: var(--border-radius); }
 
 .setup-item-form {
   position: relative;
@@ -236,20 +280,3 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
   }
 }
 
-.status-stack {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.time-available {
-  margin: 0;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: calc(var(--border-radius) * 0.7);
-  background: var(--background-color);
-  font-weight: 800;
-}
-
-.compact-warning {
-  margin: 0;
-}
