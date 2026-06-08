@@ -212,7 +212,7 @@ function renderSetup() {
 }
 
 function renderRunning() {
-  var shell = div("app-shell");
+  var shell = div("app-shell running-shell");
   var agendaPanel = div("agenda-panel");
   agendaPanel.appendChild(renderAgendaStack());
   shell.appendChild(agendaPanel);
@@ -221,14 +221,14 @@ function renderRunning() {
 }
 
 function renderRunningSidePanel() {
-  var side = div("side-panel");
-  var panel = div("panel");
-  panel.appendChild(heading("h2", state.meetingTitle));
-  var row = div("button-row");
-  row.appendChild(button("Done / Next", doneNext, "primary", { disableOnClick: true }));
-  row.appendChild(button(state.isOffTopic ? "Back to Topic" : "Off Topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
-  row.appendChild(button("Pause", pauseMeeting));
-  row.appendChild(button("End Meeting", endMeeting));
+  var side = div("side-panel running-side-panel");
+  var panel = div("panel meeting-controls-panel");
+  panel.appendChild(heading("h2", state.meetingTitle, "meeting-controls-title"));
+  var row = div("button-row meeting-controls-row");
+  row.appendChild(controlButton("✓", "Done / Next", "Complete current item and move to the next item", doneNext, "primary", { disableOnClick: true }));
+  row.appendChild(controlButton(state.isOffTopic ? "↩" : "↯", state.isOffTopic ? "Back" : "Off Topic", state.isOffTopic ? "Return to the agenda topic" : "Track time as off topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
+  row.appendChild(controlButton("⏸", "Pause", "Pause meeting timer", pauseMeeting));
+  row.appendChild(controlButton("■", "End", "End meeting", endMeeting));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -236,17 +236,17 @@ function renderRunningSidePanel() {
 }
 
 function renderPaused() {
-  var shell = div("app-shell");
+  var shell = div("app-shell running-shell paused-shell");
   var agendaPanel = div("agenda-panel");
   agendaPanel.appendChild(renderAgendaStack());
   shell.appendChild(agendaPanel);
-  var side = div("side-panel");
-  var panel = div("panel");
-  panel.appendChild(heading("h2", "Paused"));
-  panel.appendChild(paragraph("Timing is paused. Resume to continue the current segment.", "muted"));
-  var row = div("button-row");
-  row.appendChild(button("Resume", resumeMeeting, "primary"));
-  row.appendChild(button("End Meeting", endMeeting));
+  var side = div("side-panel running-side-panel");
+  var panel = div("panel meeting-controls-panel paused-controls-panel");
+  panel.appendChild(heading("h2", "Paused", "meeting-controls-title"));
+  panel.appendChild(paragraph("Timing is paused. Resume to continue the current segment.", "muted meeting-controls-note"));
+  var row = div("button-row meeting-controls-row paused-controls-row");
+  row.appendChild(controlButton("▶", "Resume", "Resume meeting timer", resumeMeeting, "primary"));
+  row.appendChild(controlButton("■", "End", "End meeting", endMeeting));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -854,7 +854,7 @@ function setThemeValue(key, value) { state.isCustomizerOpen = true; state.theme[
 function statusLabel(status) { return status === "off-topic" ? "Off topic" : status.charAt(0).toUpperCase() + status.slice(1); }
 function div(className) { var el = document.createElement("div"); if (className) el.className = className; return el; }
 function textDiv(text, className) { var el = div(className); el.textContent = text; return el; }
-function heading(level, text) { var el = document.createElement(level); el.textContent = text; return el; }
+function heading(level, text, className) { var el = document.createElement(level); if (className) el.className = className; el.textContent = text; return el; }
 function paragraph(text, className) { var el = document.createElement("p"); if (className) el.className = className; el.textContent = text || ""; return el; }
 function button(text, onClick, className, options) {
   var el = document.createElement("button");
@@ -866,6 +866,21 @@ function button(text, onClick, className, options) {
     if (options && options.disableOnClick) el.disabled = true;
     onClick(event);
   });
+  return el;
+}
+function controlButton(icon, label, ariaLabel, onClick, className, options) {
+  var el = button("", onClick, "control-button " + (className || ""), options);
+  el.setAttribute("aria-label", ariaLabel || label);
+  el.title = ariaLabel || label;
+  var iconEl = document.createElement("span");
+  iconEl.className = "control-icon";
+  iconEl.setAttribute("aria-hidden", "true");
+  iconEl.textContent = icon;
+  var labelEl = document.createElement("span");
+  labelEl.className = "control-label";
+  labelEl.textContent = label;
+  el.appendChild(iconEl);
+  el.appendChild(labelEl);
   return el;
 }
 function textAction(text, onClick, className) { return button(text, onClick, "text-action " + (className || "")); }

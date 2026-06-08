@@ -78,6 +78,60 @@ summary:focus-visible {
 .panel + .panel,
 .customizer { margin-top: 1rem; }
 
+.running-side-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.meeting-controls-panel {
+  box-shadow: 0 12px 28px rgba(31, 31, 31, 0.12);
+}
+
+.meeting-controls-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meeting-controls-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.paused-controls-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.control-button {
+  min-width: 0;
+  min-height: 58px;
+  padding: 0.5rem 0.45rem;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  border-radius: calc(var(--border-radius) * 1.15);
+  box-shadow: inset 0 -2px 0 rgba(31, 31, 31, 0.12);
+  text-align: center;
+}
+
+.control-icon {
+  font-family: system-ui, sans-serif;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.control-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  line-height: 1.1;
+}
+
 h2, h3 { margin: 0 0 0.75rem; line-height: 1.1; }
 p { margin-top: 0; }
 .muted { color: var(--muted-text-color); }
@@ -419,4 +473,63 @@ input:disabled {
 .field-help {
   color: var(--muted-text-color);
   font-size: 0.84rem;
+}
+
+@media (max-width: 859px) {
+  .running-shell {
+    padding-bottom: calc(6.25rem + env(safe-area-inset-bottom));
+  }
+
+  .running-shell .agenda-box {
+    height: min(calc(100svh - 10.5rem), 720px);
+    min-height: 360px;
+  }
+
+  .meeting-controls-panel {
+    position: fixed;
+    left: max(0.75rem, env(safe-area-inset-left));
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    z-index: 20;
+    padding: 0.65rem;
+    border-width: max(var(--border-width), 2px);
+    border-radius: calc(var(--border-radius) * 1.5);
+    box-shadow: 0 14px 36px rgba(31, 31, 31, 0.24);
+  }
+
+  .meeting-controls-title,
+  .meeting-controls-note {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .meeting-controls-row {
+    margin-top: 0;
+  }
+
+  .control-button {
+    min-height: 60px;
+    padding: 0.45rem 0.25rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header h1 { font-size: clamp(1.55rem, 10vw, 2.15rem); }
+
+  #app { padding-top: 0.4rem; }
+
+  .running-shell .agenda-box {
+    height: min(calc(100svh - 9.75rem), 720px);
+    min-height: 320px;
+  }
+
+  .control-label { font-size: 0.7rem; }
+  .control-icon { font-size: 1.18rem; }
 }
