@@ -280,3 +280,16 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
   }
 }
 
+
+input:disabled {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--surface-color) 70%, var(--background-color));
+  color: var(--muted-text-color);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.field-help {
+  color: var(--muted-text-color);
+  font-size: 0.84rem;
+}

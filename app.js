@@ -168,6 +168,7 @@ function render() {
 }
 
 function renderSetup() {
+  syncAutoItemMinutes();
   var shell = div("app-shell");
   var agendaPanel = div("agenda-panel");
   agendaPanel.appendChild(renderAgendaStack());
@@ -183,6 +184,7 @@ function renderSetup() {
   }));
   form.appendChild(labelInput("Total minutes", "number", state.totalMinutes, function (value) {
     state.totalMinutes = sanitizeMinutes(value, 30);
+    syncAutoItemMinutes();
     saveState();
     render();
   }, { min: "1", step: "1" }));
@@ -341,18 +343,21 @@ function renderSetupItemForm(itemId) {
   }));
   var controls = div("setup-controls");
   controls.appendChild(labelSelect("Duration mode", item.durationMode, [
-    { value: "manual", label: "Planned minutes" },
+    { value: "manual", label: "Set minutes" },
     { value: "auto", label: "Split remaining time" }
   ], function (value) {
     item.durationMode = value === "manual" ? "manual" : "auto";
+    syncAutoItemMinutes();
     saveState();
     render();
   }));
-  var minutes = labelInput("Planned minutes", "number", item.plannedMinutes, function (value) {
+  var minuteValue = item.durationMode === "auto" ? formatMinuteInput((getResolvedPlannedSeconds()[item.id] || 0) / 60) : item.plannedMinutes;
+  var minutes = labelInput("Minutes", "number", minuteValue, function (value) {
     item.plannedMinutes = sanitizeMinutes(value, 5);
+    syncAutoItemMinutes();
     saveState();
     render();
-  }, { min: "0", step: "1", disabled: item.durationMode !== "manual" });
+  }, { min: "0", step: "1", disabled: item.durationMode !== "manual", helpText: item.durationMode === "auto" ? "Calculated automatically from remaining meeting time." : "Enter the time allotted to this item." });
   controls.appendChild(minutes);
   form.appendChild(controls);
   var actions = div("item-actions");
@@ -450,6 +455,15 @@ function getResolvedPlannedSeconds() {
     result[item.id] = item.durationMode === "manual" ? sanitizeMinutes(item.plannedMinutes, 0) * 60 : autoSeconds;
   });
   return result;
+}
+
+function syncAutoItemMinutes() {
+  var plannedMap = getResolvedPlannedSeconds();
+  state.items.forEach(function (item) {
+    if (item.durationMode === "auto") {
+      item.plannedMinutes = Number(formatMinuteInput((plannedMap[item.id] || 0) / 60));
+    }
+  });
 }
 
 function getSegmentDuration(segment) {
@@ -682,6 +696,7 @@ function resetMeeting() {
 
 function addItem() {
   state.items.push(createItem());
+  syncAutoItemMinutes();
   saveState();
   render();
 }
@@ -692,12 +707,14 @@ function moveItem(itemId, direction) {
   if (index < 0 || nextIndex < 0 || nextIndex >= state.items.length) return;
   var item = state.items.splice(index, 1)[0];
   state.items.splice(nextIndex, 0, item);
+  syncAutoItemMinutes();
   saveState();
   render();
 }
 
 function deleteItem(itemId) {
   state.items = state.items.filter(function (item) { return item.id !== itemId; });
+  syncAutoItemMinutes();
   saveState();
   render();
 }
@@ -728,6 +745,7 @@ function formatDuration(seconds) {
 }
 
 function pad(number) { return number < 10 ? "0" + number : String(number); }
+function formatMinuteInput(minutes) { var rounded = Math.round(safeNumber(minutes) * 10) / 10; return Math.floor(rounded) === rounded ? String(rounded) : rounded.toFixed(1); }
 function findItem(id) { return state.items.find(function (item) { return item.id === id; }); }
 function safeNumber(value) { return isFinite(Number(value)) && Number(value) > 0 ? Number(value) : 0; }
 function safePercent(value) { return Math.max(0, Math.min(100, safeNumber(value))); }
@@ -753,11 +771,17 @@ function labelInput(labelText, type, value, onChange, attrs) {
   input.id = id;
   input.type = type;
   input.value = value;
-  if (attrs) Object.keys(attrs).forEach(function (key) { if (key === "disabled") input.disabled = !!attrs[key]; else input.setAttribute(key, attrs[key]); });
+  if (attrs) Object.keys(attrs).forEach(function (key) {
+    if (key === "disabled") input.disabled = !!attrs[key];
+    else if (key !== "helpText") input.setAttribute(key, attrs[key]);
+  });
   input.addEventListener("change", function () { onChange(input.value); });
   input.addEventListener("input", function () { if (type === "color" || type === "range") onChange(input.value); });
   wrap.appendChild(label);
   wrap.appendChild(input);
+  if (attrs && attrs.helpText) {
+    wrap.appendChild(textDiv(attrs.helpText, "field-help"));
+  }
   return wrap;
 }
 
