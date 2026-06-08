@@ -212,7 +212,7 @@ function renderSetup() {
 }
 
 function renderRunning() {
-  var shell = div("app-shell");
+  var shell = div("app-shell running-shell");
   var agendaPanel = div("agenda-panel");
   agendaPanel.appendChild(renderAgendaStack());
   shell.appendChild(agendaPanel);
@@ -221,14 +221,14 @@ function renderRunning() {
 }
 
 function renderRunningSidePanel() {
-  var side = div("side-panel");
-  var panel = div("panel");
-  panel.appendChild(heading("h2", state.meetingTitle));
-  var row = div("button-row");
-  row.appendChild(button("Done / Next", doneNext, "primary", { disableOnClick: true }));
-  row.appendChild(button(state.isOffTopic ? "Back to Topic" : "Off Topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
-  row.appendChild(button("Pause", pauseMeeting));
-  row.appendChild(button("End Meeting", endMeeting));
+  var side = div("side-panel running-side-panel");
+  var panel = div("panel meeting-controls-panel");
+  panel.appendChild(heading("h2", state.meetingTitle, "meeting-controls-title"));
+  var row = div("button-row meeting-controls-row");
+  row.appendChild(controlButton("check", "Done", "Complete current item and move to the next item", doneNext, "primary", { disableOnClick: true }));
+  row.appendChild(controlButton(state.isOffTopic ? "undo" : "offTopic", state.isOffTopic ? "Back" : "Off Topic", state.isOffTopic ? "Return to the agenda topic" : "Track time as off topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
+  row.appendChild(controlButton("pause", "Pause", "Pause meeting timer", pauseMeeting));
+  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting, "end-control"));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -236,17 +236,17 @@ function renderRunningSidePanel() {
 }
 
 function renderPaused() {
-  var shell = div("app-shell");
+  var shell = div("app-shell running-shell paused-shell");
   var agendaPanel = div("agenda-panel");
   agendaPanel.appendChild(renderAgendaStack());
   shell.appendChild(agendaPanel);
-  var side = div("side-panel");
-  var panel = div("panel");
-  panel.appendChild(heading("h2", "Paused"));
-  panel.appendChild(paragraph("Timing is paused. Resume to continue the current segment.", "muted"));
-  var row = div("button-row");
-  row.appendChild(button("Resume", resumeMeeting, "primary"));
-  row.appendChild(button("End Meeting", endMeeting));
+  var side = div("side-panel running-side-panel");
+  var panel = div("panel meeting-controls-panel paused-controls-panel");
+  panel.appendChild(heading("h2", "Paused", "meeting-controls-title"));
+  panel.appendChild(paragraph("Timing is paused. Resume to continue the current segment.", "muted meeting-controls-note"));
+  var row = div("button-row meeting-controls-row paused-controls-row");
+  row.appendChild(controlButton("play", "Resume", "Resume meeting timer", resumeMeeting, "primary"));
+  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting, "end-control"));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -854,7 +854,7 @@ function setThemeValue(key, value) { state.isCustomizerOpen = true; state.theme[
 function statusLabel(status) { return status === "off-topic" ? "Off topic" : status.charAt(0).toUpperCase() + status.slice(1); }
 function div(className) { var el = document.createElement("div"); if (className) el.className = className; return el; }
 function textDiv(text, className) { var el = div(className); el.textContent = text; return el; }
-function heading(level, text) { var el = document.createElement(level); el.textContent = text; return el; }
+function heading(level, text, className) { var el = document.createElement(level); if (className) el.className = className; el.textContent = text; return el; }
 function paragraph(text, className) { var el = document.createElement("p"); if (className) el.className = className; el.textContent = text || ""; return el; }
 function button(text, onClick, className, options) {
   var el = document.createElement("button");
@@ -867,6 +867,39 @@ function button(text, onClick, className, options) {
     onClick(event);
   });
   return el;
+}
+function controlButton(iconName, label, ariaLabel, onClick, className, options) {
+  var el = button("", onClick, "control-button " + (className || ""), options);
+  el.setAttribute("aria-label", ariaLabel || label);
+  var iconEl = document.createElement("span");
+  iconEl.className = "control-icon";
+  iconEl.setAttribute("aria-hidden", "true");
+  iconEl.appendChild(iconSvg(iconName));
+  var labelEl = document.createElement("span");
+  labelEl.className = "control-label";
+  labelEl.textContent = label;
+  el.appendChild(iconEl);
+  el.appendChild(labelEl);
+  return el;
+}
+
+function iconSvg(name) {
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("focusable", "false");
+  svg.setAttribute("aria-hidden", "true");
+  var paths = {
+    check: "M5 12.5l4.2 4.2L19 6.9",
+    offTopic: "M4 12h6c3 0 3-5 6-5h3M16 4l3 3-3 3M10 12c3 0 3 5 6 5h3M16 14l3 3-3 3",
+    undo: "M9 7H5v4M5 7l5.5 5.5A5 5 0 1 0 14 4",
+    pause: "M8 5v14M16 5v14",
+    play: "M8 5v14l11-7z",
+    stop: "M7 7h10v10H7z"
+  };
+  var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", paths[name] || paths.check);
+  svg.appendChild(path);
+  return svg;
 }
 function textAction(text, onClick, className) { return button(text, onClick, "text-action " + (className || "")); }
 
