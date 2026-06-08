@@ -38,6 +38,7 @@
 
   let timerId = null;
   let styleJsonValue = "";
+  let isCustomizerOpen = false;
 
   const app = document.getElementById("app");
   if (!app) {
@@ -115,13 +116,18 @@
     return wrapper;
   }
 
-  function input(type, value, onInput) {
+  function input(type, value, onInput, onBlur) {
     const element = document.createElement("input");
     element.type = type;
     element.value = value;
     element.addEventListener("input", function () {
       onInput(element.value, element);
     });
+    if (onBlur) {
+      element.addEventListener("blur", function () {
+        onBlur(element.value, element);
+      });
+    }
     return element;
   }
 
@@ -573,13 +579,11 @@
       label("Meeting title", input("text", state.meetingTitle, function (value) {
         state.meetingTitle = value || "Visual Agenda";
         persistSetup();
-        render();
       })),
       label("Total meeting length (minutes)", input("number", state.totalMinutes, function (value, inputElement) {
         inputElement.min = "1";
         state.totalMinutes = Math.max(1, toNumber(value, 30));
         persistSetup();
-        render();
       }))
     );
     panel.append(fields);
@@ -600,7 +604,6 @@
         label("Agenda item title", input("text", item.title, function (value) {
           item.title = value;
           persistSetup();
-          render();
         })),
         label("Duration mode", select([
           { value: "auto", label: "Auto" },
@@ -613,7 +616,6 @@
         label("Planned minutes", input("number", item.plannedMinutes, function (value) {
           item.plannedMinutes = Math.max(0, toNumber(value, 0));
           persistSetup();
-          render();
         }))
       );
       const minuteInput = grid.querySelector("label:last-child input");
@@ -712,8 +714,21 @@
   }
 
   function renderCustomizer(parent) {
-    const panel = el("section", "panel");
-    panel.append(el("p", "eyebrow", "Customize"), el("h2", "Customize"));
+    const wrapper = el("section", "customizer-floating");
+    const toggle = button(isCustomizerOpen ? "Close customize" : "Customize", "primary customizer-toggle", function () {
+      isCustomizerOpen = !isCustomizerOpen;
+      render();
+    });
+    toggle.setAttribute("aria-expanded", String(isCustomizerOpen));
+    wrapper.append(toggle);
+
+    if (!isCustomizerOpen) {
+      parent.append(wrapper);
+      return;
+    }
+
+    const panel = el("div", "panel customizer-popover");
+    panel.append(el("p", "eyebrow", "Customize"), el("h2", "Style controls"));
     const grid = el("div", "customizer-grid");
 
     grid.append(label("Font family", select([
@@ -724,7 +739,7 @@
     ], state.theme.fontFamily, function (value) {
       state.theme.fontFamily = value;
       persistSetup();
-      render();
+      applyTheme();
     })));
 
     [
@@ -742,7 +757,7 @@
       grid.append(label(entry[0], input("color", colorValue(state.theme[entry[1]]), function (value) {
         state.theme[entry[1]] = value;
         persistSetup();
-        render();
+        applyTheme();
       })));
     });
 
@@ -754,7 +769,7 @@
       const control = input("range", state.theme[entry[1]], function (value) {
         state.theme[entry[1]] = toNumber(value, DEFAULT_THEME[entry[1]]);
         persistSetup();
-        render();
+        applyTheme();
       });
       control.min = entry[2];
       control.max = entry[3];
@@ -800,7 +815,8 @@
       area.value = styleJsonValue;
       panel.append(label("Exported style JSON", area));
     }
-    parent.append(panel);
+    wrapper.append(panel);
+    parent.append(wrapper);
   }
 
   function renderSummary(parent) {
