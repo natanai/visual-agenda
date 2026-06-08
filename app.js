@@ -30,7 +30,8 @@ var state = {
   items: [],
   segments: [],
   theme: copyTheme(defaultTheme),
-  isCustomizerOpen: false
+  isCustomizerOpen: false,
+  editingItemId: null
 };
 
 var fontOptions = {
@@ -289,6 +290,9 @@ function renderAgendaStack() {
 
 function renderBlock(blockData) {
   var block = div("agenda-block " + blockData.status);
+  if (state.mode === "setup" && blockData.type === "agenda") {
+    block.className += state.editingItemId === blockData.id ? " setup-editing" : " setup-collapsed";
+  }
   if (state.mode === "setup") {
     block.style.flexBasis = "auto";
   } else {
@@ -300,8 +304,7 @@ function renderBlock(blockData) {
   block.appendChild(fill);
   var content = div("block-content");
   if (state.mode === "setup" && blockData.type === "agenda") {
-    content.appendChild(textDiv(statusLabel(blockData.status), "block-status"));
-    content.appendChild(renderSetupItemForm(blockData.id));
+    content.appendChild(renderSetupItem(blockData.id, blockData));
   } else {
     content.className += " block-content-line";
     content.appendChild(renderInlineBlockLabel(blockData));
@@ -334,6 +337,28 @@ function renderInlineBlockLabel(blockData) {
   return row;
 }
 
+function renderSetupItem(itemId, blockData) {
+  return state.editingItemId === itemId ? renderSetupItemForm(itemId) : renderSetupItemSummary(itemId, blockData);
+}
+
+function renderSetupItemSummary(itemId, blockData) {
+  var summary = div("setup-item-summary");
+  summary.appendChild(renderReorderControls(itemId));
+
+  var main = div("setup-item-summary-main");
+  var title = textDiv(blockData.title, "setup-item-summary-title");
+  title.title = blockData.title;
+  main.appendChild(title);
+  main.appendChild(textDiv(formatDuration(blockData.visualSeconds), "setup-item-summary-meta"));
+  summary.appendChild(main);
+
+  var actions = div("setup-summary-actions");
+  actions.appendChild(textAction("edit", function () { setEditingItem(itemId); }, "edit-action"));
+  actions.appendChild(textAction("delete", function () { deleteItem(itemId); }, "delete-action"));
+  summary.appendChild(actions);
+  return summary;
+}
+
 function renderSetupItemForm(itemId) {
   var item = findItem(itemId);
   var form = div("setup-item-form");
@@ -357,15 +382,31 @@ function renderSetupItemForm(itemId) {
     syncAutoItemMinutes();
     saveState();
     render();
-  }, { min: "0", step: "1", disabled: item.durationMode !== "manual", helpText: item.durationMode === "auto" ? "Calculated automatically from remaining meeting time." : "Enter the time allotted to this item." });
+  }, { min: "0", step: "1", disabled: item.durationMode !== "manual" });
   controls.appendChild(minutes);
   form.appendChild(controls);
   var actions = div("item-actions");
-  actions.appendChild(button("Move up", function () { moveItem(itemId, -1); }));
-  actions.appendChild(button("Move down", function () { moveItem(itemId, 1); }));
-  actions.appendChild(button("Delete", function () { deleteItem(itemId); }, "danger"));
+  actions.appendChild(renderReorderControls(itemId));
+  actions.appendChild(textAction("delete", function () { deleteItem(itemId); }, "delete-action"));
+  actions.appendChild(button("Done", function () { finishEditingItem(itemId); }, "primary done-action"));
   form.appendChild(actions);
   return form;
+}
+
+function renderReorderControls(itemId) {
+  var controls = div("reorder-controls");
+  var up = button("↑", function () { moveItem(itemId, -1); }, "icon-button reorder-button");
+  up.setAttribute("aria-label", "Move item up");
+  up.title = "Move item up";
+  up.disabled = isFirstItem(itemId);
+  controls.appendChild(up);
+
+  var down = button("↓", function () { moveItem(itemId, 1); }, "icon-button reorder-button");
+  down.setAttribute("aria-label", "Move item down");
+  down.title = "Move item down";
+  down.disabled = isLastItem(itemId);
+  controls.appendChild(down);
+  return controls;
 }
 
 function renderCustomizer() {
@@ -599,6 +640,7 @@ function startMeeting() {
   if (!state.items.length) return;
   var now = Date.now();
   state.mode = "running";
+  state.editingItemId = null;
   state.meetingStartedAt = now;
   state.meetingEndedAt = null;
   state.isOffTopic = false;
@@ -667,6 +709,7 @@ function endMeeting(forcedNow) {
 
 function backToSetup() {
   state.mode = "setup";
+  state.editingItemId = null;
   state.activeItemId = null;
   state.isOffTopic = false;
   state.meetingStartedAt = null;
@@ -680,6 +723,7 @@ function backToSetup() {
 function resetMeeting() {
   var theme = copyTheme(state.theme);
   state.mode = "setup";
+  state.editingItemId = null;
   state.meetingTitle = "Visual Agenda";
   state.totalMinutes = 30;
   state.activeItemId = null;
@@ -695,7 +739,9 @@ function resetMeeting() {
 }
 
 function addItem() {
-  state.items.push(createItem());
+  var item = createItem();
+  state.items.push(item);
+  state.editingItemId = item.id;
   syncAutoItemMinutes();
   saveState();
   render();
@@ -714,9 +760,30 @@ function moveItem(itemId, direction) {
 
 function deleteItem(itemId) {
   state.items = state.items.filter(function (item) { return item.id !== itemId; });
+  if (state.editingItemId === itemId) state.editingItemId = null;
   syncAutoItemMinutes();
   saveState();
   render();
+}
+
+function setEditingItem(itemId) {
+  state.editingItemId = itemId;
+  render();
+}
+
+function finishEditingItem(itemId) {
+  if (state.editingItemId === itemId) state.editingItemId = null;
+  saveState();
+  render();
+}
+
+function isFirstItem(itemId) {
+  return state.items.findIndex(function (item) { return item.id === itemId; }) === 0;
+}
+
+function isLastItem(itemId) {
+  var index = state.items.findIndex(function (item) { return item.id === itemId; });
+  return index === state.items.length - 1;
 }
 
 function manageTimer() {
@@ -760,6 +827,7 @@ function textDiv(text, className) { var el = div(className); el.textContent = te
 function heading(level, text) { var el = document.createElement(level); el.textContent = text; return el; }
 function paragraph(text, className) { var el = document.createElement("p"); if (className) el.className = className; el.textContent = text || ""; return el; }
 function button(text, onClick, className) { var el = document.createElement("button"); el.type = "button"; if (className) el.className = className; el.textContent = text; el.addEventListener("click", onClick); return el; }
+function textAction(text, onClick, className) { return button(text, onClick, "text-action " + (className || "")); }
 
 function labelInput(labelText, type, value, onChange, attrs) {
   var id = createId("input");
