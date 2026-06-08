@@ -235,3 +235,21 @@ button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
     min-height: 0;
   }
 }
+
+.status-stack {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.time-available {
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: calc(var(--border-radius) * 0.7);
+  background: var(--background-color);
+  font-weight: 800;
+}
+
+.compact-warning {
+  margin: 0;
+}

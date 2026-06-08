@@ -29,7 +29,8 @@ var state = {
   now: Date.now(),
   items: [],
   segments: [],
-  theme: copyTheme(defaultTheme)
+  theme: copyTheme(defaultTheme),
+  isCustomizerOpen: false
 };
 
 var fontOptions = {
@@ -303,6 +304,8 @@ function renderBlock(blockData) {
   } else {
     content.appendChild(textDiv(blockData.title, "block-title"));
     var meta = "Planned " + formatDuration(blockData.plannedSeconds) + " · Actual " + formatDuration(blockData.actualSeconds);
+    if (blockData.status === "pending") meta = "Planned " + formatDuration(blockData.plannedSeconds) + " · Time available " + formatDuration(blockData.visualSeconds);
+    if (blockData.status === "active") meta = "Planned " + formatDuration(blockData.plannedSeconds) + " · Used " + formatDuration(blockData.actualSeconds) + " · Item time left " + formatDuration(Math.max(0, blockData.plannedSeconds - blockData.actualSeconds));
     if (blockData.type === "offTopic") meta = "Consumed " + formatDuration(blockData.actualSeconds);
     content.appendChild(textDiv(meta, "block-meta"));
   }
@@ -344,6 +347,10 @@ function renderSetupItemForm(itemId) {
 function renderCustomizer() {
   var details = document.createElement("details");
   details.className = "customizer";
+  details.open = !!state.isCustomizerOpen;
+  details.addEventListener("toggle", function () {
+    state.isCustomizerOpen = details.open;
+  });
   var summary = document.createElement("summary");
   summary.textContent = "Customize";
   details.appendChild(summary);
@@ -677,12 +684,34 @@ function deleteItem(itemId) {
 }
 
 function statusText() {
-  var p = paragraph("", "status-line");
-  p.setAttribute("aria-live", "polite");
+  var wrap = div("status-stack");
+  wrap.setAttribute("aria-live", "polite");
   var active = findItem(state.activeItemId);
   var modeText = state.isOffTopic ? "Off topic during " : "On topic: ";
-  p.textContent = modeText + (active ? active.title : "No active item") + " · Elapsed " + formatDuration(getTotalElapsedSeconds()) + " · Off topic " + formatDuration(getOffTopicSeconds());
-  return p;
+  wrap.appendChild(paragraph(modeText + (active ? active.title : "No active item") + " · Elapsed " + formatDuration(getTotalElapsedSeconds()) + " · Off topic " + formatDuration(getOffTopicSeconds()), "status-line"));
+  var budget = getAvailableTimeSnapshot();
+  var available = paragraph("Future time available: " + formatDuration(budget.availableSeconds) + " of " + formatDuration(budget.plannedPendingSeconds) + " planned for remaining agenda items.", "time-available");
+  wrap.appendChild(available);
+  if (budget.availableSeconds < budget.plannedPendingSeconds) {
+    wrap.appendChild(paragraph("Future agenda time has lost " + formatDuration(budget.plannedPendingSeconds - budget.availableSeconds) + " to overtime or off-topic discussion.", "warning compact-warning"));
+  }
+  return wrap;
+}
+
+function getAvailableTimeSnapshot() {
+  var blocks = calculateVisualBlocks();
+  var plannedPendingSeconds = 0;
+  var availableSeconds = 0;
+  blocks.forEach(function (block) {
+    if (block.type === "agenda" && block.status === "pending") {
+      plannedPendingSeconds += block.plannedSeconds;
+      availableSeconds += block.visualSeconds;
+    }
+  });
+  return {
+    plannedPendingSeconds: plannedPendingSeconds,
+    availableSeconds: availableSeconds
+  };
 }
 
 function manageTimer() {
@@ -714,7 +743,7 @@ function safeNumber(value) { return isFinite(Number(value)) && Number(value) > 0
 function safePercent(value) { return Math.max(0, Math.min(100, safeNumber(value))); }
 function clampNumber(value, min, max, fallback) { var number = Number(value); return isFinite(number) ? Math.max(min, Math.min(max, number)) : fallback; }
 function sanitizeMinutes(value, fallback) { return clampNumber(value, 0, 1440, fallback); }
-function setThemeValue(key, value) { state.theme[key] = value; state.theme = validateTheme(state.theme, state.theme); saveState(); render(); }
+function setThemeValue(key, value) { state.isCustomizerOpen = true; state.theme[key] = value; state.theme = validateTheme(state.theme, state.theme); saveState(); render(); }
 function statusLabel(status) { return status === "off-topic" ? "Off topic" : status.charAt(0).toUpperCase() + status.slice(1); }
 
 function div(className) { var el = document.createElement("div"); if (className) el.className = className; return el; }
