@@ -93,7 +93,7 @@ summary:focus-visible {
   white-space: nowrap;
 }
 
-.meeting-controls-row {
+.button-row.meeting-controls-row {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -102,7 +102,7 @@ summary:focus-visible {
   justify-items: stretch;
 }
 
-.paused-controls-row {
+.button-row.paused-controls-row {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -538,7 +538,7 @@ input:disabled {
     border: 0;
   }
 
-  .meeting-controls-row {
+  .button-row.meeting-controls-row {
     margin-top: 0;
   }
 
@@ -555,7 +555,7 @@ input:disabled {
     padding: 0.5rem;
   }
 
-  .meeting-controls-row {
+  .button-row.meeting-controls-row {
     gap: 0.4rem;
   }
 
@@ -580,7 +580,7 @@ input:disabled {
     min-height: 320px;
   }
 
-  .meeting-controls-row { gap: 0.3rem; }
+  .button-row.meeting-controls-row { gap: 0.3rem; }
   .control-icon { width: 1.18rem; height: 1.18rem; }
   .control-label { font-size: 0.58rem; }
 }
