@@ -1,5 +1,6 @@
 var STORAGE_KEY = "visual-agenda-static-v1";
 var timerId = null;
+var doneNextInProgress = false;
 
 var defaultTheme = {
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
@@ -215,19 +216,23 @@ function renderRunning() {
   var agendaPanel = div("agenda-panel");
   agendaPanel.appendChild(renderAgendaStack());
   shell.appendChild(agendaPanel);
+  shell.appendChild(renderRunningSidePanel());
+  return shell;
+}
+
+function renderRunningSidePanel() {
   var side = div("side-panel");
   var panel = div("panel");
   panel.appendChild(heading("h2", state.meetingTitle));
   var row = div("button-row");
-  row.appendChild(button("Done / Next", doneNext, "primary"));
+  row.appendChild(button("Done / Next", doneNext, "primary", { disableOnClick: true }));
   row.appendChild(button(state.isOffTopic ? "Back to Topic" : "Off Topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
   row.appendChild(button("Pause", pauseMeeting));
   row.appendChild(button("End Meeting", endMeeting));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
-  shell.appendChild(side);
-  return shell;
+  return side;
 }
 
 function renderPaused() {
@@ -660,6 +665,8 @@ function startMeeting() {
 }
 
 function doneNext() {
+  if (doneNextInProgress || state.mode !== "running") return;
+  doneNextInProgress = true;
   var now = Date.now();
   closeOpenSegment(now);
   var active = findItem(state.activeItemId);
@@ -674,6 +681,7 @@ function doneNext() {
   } else {
     endMeeting(now);
   }
+  window.setTimeout(function () { doneNextInProgress = false; }, 0);
 }
 
 function toggleOffTopic() {
@@ -798,11 +806,7 @@ function manageTimer() {
   if (state.mode === "running" && !timerId) {
     timerId = setInterval(function () {
       state.now = Date.now();
-      if (isCustomizerControlActive()) {
-        refreshAgendaPanel();
-      } else {
-        render();
-      }
+      refreshRunningDisplay();
     }, 500);
   }
   if (state.mode !== "running" && timerId) {
@@ -811,7 +815,8 @@ function manageTimer() {
   }
 }
 
-function refreshAgendaPanel() {
+function refreshRunningDisplay() {
+  if (state.mode !== "running") return;
   var agendaPanel = document.querySelector(".agenda-panel");
   if (!agendaPanel) {
     render();
@@ -847,13 +852,22 @@ function clampNumber(value, min, max, fallback) { var number = Number(value); re
 function sanitizeMinutes(value, fallback) { return clampNumber(value, 0, 1440, fallback); }
 function setThemeValue(key, value) { state.isCustomizerOpen = true; state.theme[key] = value; state.theme = validateTheme(state.theme, state.theme); applyTheme(); saveState(); }
 function statusLabel(status) { return status === "off-topic" ? "Off topic" : status.charAt(0).toUpperCase() + status.slice(1); }
-function isCustomizerControlActive() { return !!(document.activeElement && document.activeElement.closest && document.activeElement.closest(".customizer")); }
-
 function div(className) { var el = document.createElement("div"); if (className) el.className = className; return el; }
 function textDiv(text, className) { var el = div(className); el.textContent = text; return el; }
 function heading(level, text) { var el = document.createElement(level); el.textContent = text; return el; }
 function paragraph(text, className) { var el = document.createElement("p"); if (className) el.className = className; el.textContent = text || ""; return el; }
-function button(text, onClick, className) { var el = document.createElement("button"); el.type = "button"; if (className) el.className = className; el.textContent = text; el.addEventListener("click", onClick); return el; }
+function button(text, onClick, className, options) {
+  var el = document.createElement("button");
+  el.type = "button";
+  if (className) el.className = className;
+  el.textContent = text;
+  el.addEventListener("click", function (event) {
+    if (el.disabled) return;
+    if (options && options.disableOnClick) el.disabled = true;
+    onClick(event);
+  });
+  return el;
+}
 function textAction(text, onClick, className) { return button(text, onClick, "text-action " + (className || "")); }
 
 function labelInput(labelText, type, value, onChange, attrs) {
