@@ -1,48 +1,28 @@
 # Visual Agenda
 
-A frontend-only meeting agenda timer for seeing where time is being spent and how that affects the remaining agenda.
+Visual Agenda is a static HTML/CSS/JavaScript app. It has no build step and no backend.
 
-## Static hosting / GitHub Pages
+## Run locally
 
-This is a static Vite app. It has no backend and can be hosted from the `dist/` folder.
+Open `index.html` in a browser.
 
-Local development:
+No npm install, build command, local server, package manager, or external CDN is required.
 
-```bash
-npm run dev
-```
+## Host on GitHub Pages
 
-Production build:
+1. Go to repository **Settings**.
+2. Go to **Pages**.
+3. Set **Source** to **Deploy from a branch**.
+4. Set **Branch** to the branch containing `index.html`.
+5. Set **Folder** to `/(root)`.
+6. Save.
 
-```bash
-npm run build
-```
+The app is designed to be served directly from the branch root. The root app files are:
 
-Preview production build:
+- `index.html`
+- `style.css`
+- `app.js`
+- `.nojekyll`
+- `README.md`
 
-```bash
-npm run preview
-```
-
-GitHub Pages:
-This repo deploys through GitHub Actions. In repository **Settings → Pages**, set Source to **GitHub Actions**.
-
-The Vite base path is:
-
-- `/` during local development and Codex preview
-- `/visual-agenda/` during GitHub Actions builds
-
-The expected project Pages URL is:
-
-```text
-https://<your-github-username>.github.io/visual-agenda/
-```
-
-The workflow installs dependencies, runs tests, runs `npm run build`, uploads the generated `dist/` folder, and deploys that artifact to Pages. Do not publish the raw repository files directly; Vite must compile `src/main.tsx` into static assets first.
-
-## Local setup
-
-```bash
-npm install
-npm run dev
-```
+All asset paths are relative, so the app can load from GitHub Pages, a local file URL, or any static file host.

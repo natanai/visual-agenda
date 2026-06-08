@@ -1,12 +1,23 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Visual Agenda</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="app.js"></script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="site-header">
+      <p class="eyebrow">Meeting time, made visible</p>
+      <h1>Visual Agenda</h1>
+      <p class="lede">Plan a meeting, watch time fill the active topic, and see later agenda items shrink as time is spent.</p>
+      <noscript>
+        <p class="noscript-warning">JavaScript is disabled, so the interactive agenda cannot run. Enable JavaScript to use Visual Agenda.</p>
+      </noscript>
+    </header>
+    <main id="app" class="fallback" aria-live="polite">
+      <p>Loading Visual Agenda...</p>
+    </main>
   </body>
 </html>
