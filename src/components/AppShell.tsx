@@ -45,9 +45,12 @@ const AppShell = ({ state, dispatch }: AppShellProps) => {
       </header>
 
       {state.status === 'setup' ? (
-        <div className="layout two-column">
-          <MeetingSetup state={state} dispatch={dispatch} />
-          <CustomizerPanel state={state} dispatch={dispatch} />
+        <div className="layout dashboard">
+          <div className="side-column">
+            <MeetingSetup state={state} dispatch={dispatch} />
+            <CustomizerPanel state={state} dispatch={dispatch} />
+          </div>
+          <AgendaStack state={state} calculation={calculation} dispatch={dispatch} showSetupAddButton />
         </div>
       ) : (
         <div className="layout dashboard">

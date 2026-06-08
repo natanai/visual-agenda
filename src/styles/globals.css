@@ -199,6 +199,10 @@ input:focus {
   flex-direction: column;
   gap: 0.7rem;
   min-height: 42rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 1.25rem;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.24);
 }
 
 .agenda-block {
@@ -266,4 +270,48 @@ input:focus {
   .agenda-editor-row {
     grid-template-columns: 1fr;
   }
+}
+
+.error-fallback {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: #0f172a;
+  color: #f8fafc;
+  text-align: center;
+}
+
+.error-fallback pre {
+  max-width: min(44rem, 90vw);
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.empty-stack {
+  display: grid;
+  place-content: center;
+  gap: 0.35rem;
+  min-height: 10rem;
+  border: 2px dashed rgba(255, 255, 255, 0.22);
+  border-radius: 1.15rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-stack strong {
+  color: var(--text);
+}
+
+.add-in-stack {
+  width: 100%;
+  border: 2px dashed rgba(255, 255, 255, 0.24);
+  border-radius: 1.15rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
 }

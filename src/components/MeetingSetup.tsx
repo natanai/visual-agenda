@@ -72,9 +72,6 @@ const MeetingSetup = ({ state, dispatch }: MeetingSetupProps) => (
     </div>
 
     <div className="button-row">
-      <button type="button" onClick={() => dispatch({ type: 'ADD_AGENDA_ITEM' })}>
-        Add topic
-      </button>
       <button type="button" className="primary" disabled={state.agendaItems.length === 0} onClick={() => dispatch({ type: 'START_MEETING', payload: { now: Date.now() } })}>
         Start meeting
       </button>
