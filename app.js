@@ -2,8 +2,8 @@ var STORAGE_KEY = "visual-agenda-static-v1";
 var timerId = null;
 
 var defaultTheme = {
-  fontFamily: "system-ui, sans-serif",
-  backgroundColor: "#f7f4ef",
+  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+  backgroundColor: "#f8f6f1",
   surfaceColor: "#ffffff",
   textColor: "#1f1f1f",
   mutedTextColor: "#666666",
@@ -13,9 +13,9 @@ var defaultTheme = {
   pendingColor: "#ffffff",
   offTopicColor: "#ffe2c7",
   fillColor: "rgba(0, 0, 0, 0.16)",
-  borderWidth: 2,
-  borderRadius: 14,
-  itemGap: 8
+  borderWidth: 1,
+  borderRadius: 6,
+  itemGap: 6
 };
 
 var state = {
@@ -200,7 +200,6 @@ function renderSetup() {
   }
 
   var row = div("button-row");
-  row.appendChild(button("+ Add Agenda Item", function () { addItem(); }));
   var start = button("Start Meeting", startMeeting, "primary");
   start.disabled = state.items.length === 0;
   row.appendChild(start);
@@ -274,17 +273,16 @@ function renderAgendaStack() {
   var blocks = calculateVisualBlocks();
   if (blocks.length === 0) {
     var empty = div("agenda-empty");
-    empty.appendChild(paragraph("No agenda items yet. Add the first one below."));
     empty.appendChild(button("+ Add Agenda Item", function () { addItem(); }, "full-button"));
     box.appendChild(empty);
     return box;
   }
-  blocks.forEach(function (blockData) {
+  blocks.forEach(function (blockData, index) {
     box.appendChild(renderBlock(blockData));
+    if (state.mode === "setup" && index === 0) {
+      box.appendChild(button("+ Add Agenda Item", function () { addItem(); }, "full-button add-after-first"));
+    }
   });
-  if (state.mode === "setup") {
-    box.appendChild(button("+ Add Agenda Item", function () { addItem(); }, "full-button add-inside"));
-  }
   return box;
 }
 
@@ -354,7 +352,6 @@ function renderSetupItemSummary(itemId, blockData) {
 
   var actions = div("setup-summary-actions");
   actions.appendChild(textAction("edit", function () { setEditingItem(itemId); }, "edit-action"));
-  actions.appendChild(textAction("delete", function () { deleteItem(itemId); }, "delete-action"));
   summary.appendChild(actions);
   return summary;
 }
