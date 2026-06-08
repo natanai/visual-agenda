@@ -6,10 +6,10 @@
   --muted-text-color: #666666;
   --border-color: #1f1f1f;
   --active-color: #fff36d;
-  --completed-color: #e8e2d6;
+  --completed-color: #8bd8ff;
   --pending-color: #f36868;
-  --off-topic-color: #8bd8ff;
-  --fill-color: rgba(0, 0, 0, 0.22);
+  --off-topic-color: #c084fc;
+  --fill-color: #8bd8ff;
   --border-width: 1px;
   --border-radius: 6px;
   --item-gap: 6px;

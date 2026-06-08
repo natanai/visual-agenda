@@ -9,10 +9,10 @@ var defaultTheme = {
   mutedTextColor: "#666666",
   borderColor: "#1f1f1f",
   activeColor: "#fff36d",
-  completedColor: "#e8e2d6",
+  completedColor: "#8bd8ff",
   pendingColor: "#f36868",
-  offTopicColor: "#8bd8ff",
-  fillColor: "rgba(0, 0, 0, 0.22)",
+  offTopicColor: "#c084fc",
+  fillColor: "#8bd8ff",
   borderWidth: 1,
   borderRadius: 6,
   itemGap: 6
