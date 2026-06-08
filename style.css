@@ -118,9 +118,27 @@ summary:focus-visible {
 }
 
 .control-icon {
-  font-family: system-ui, sans-serif;
-  font-size: 1.25rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: grid;
+  place-items: center;
   line-height: 1;
+}
+
+.control-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.control-button[aria-label="End meeting"] .control-icon svg,
+.control-button[aria-label="Resume meeting timer"] .control-icon svg {
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 .control-label {
@@ -305,7 +323,9 @@ button {
   font-weight: 800;
   touch-action: manipulation;
 }
-button:hover { transform: translateY(-1px); }
+@media (hover: hover) {
+  button:hover { transform: translateY(-1px); }
+}
 button:disabled { cursor: not-allowed; opacity: 0.5; transform: none; }
 .primary { background: var(--text-color); color: var(--background-color); }
 .danger { background: var(--off-topic-color); }
@@ -520,6 +540,29 @@ input:disabled {
   }
 }
 
+@media (max-width: 520px) {
+  .meeting-controls-row {
+    gap: 0.35rem;
+  }
+
+  .control-button {
+    min-height: 56px;
+    gap: 0;
+  }
+
+  .control-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
 @media (max-width: 420px) {
   .site-header h1 { font-size: clamp(1.55rem, 10vw, 2.15rem); }
 
@@ -530,6 +573,5 @@ input:disabled {
     min-height: 320px;
   }
 
-  .control-label { font-size: 0.7rem; }
-  .control-icon { font-size: 1.18rem; }
+  .control-icon { width: 1.2rem; height: 1.2rem; }
 }

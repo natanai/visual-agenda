@@ -225,10 +225,10 @@ function renderRunningSidePanel() {
   var panel = div("panel meeting-controls-panel");
   panel.appendChild(heading("h2", state.meetingTitle, "meeting-controls-title"));
   var row = div("button-row meeting-controls-row");
-  row.appendChild(controlButton("✓", "Done / Next", "Complete current item and move to the next item", doneNext, "primary", { disableOnClick: true }));
-  row.appendChild(controlButton(state.isOffTopic ? "↩" : "↯", state.isOffTopic ? "Back" : "Off Topic", state.isOffTopic ? "Return to the agenda topic" : "Track time as off topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
-  row.appendChild(controlButton("⏸", "Pause", "Pause meeting timer", pauseMeeting));
-  row.appendChild(controlButton("■", "End", "End meeting", endMeeting));
+  row.appendChild(controlButton("check", "Done", "Complete current item and move to the next item", doneNext, "primary", { disableOnClick: true }));
+  row.appendChild(controlButton(state.isOffTopic ? "undo" : "offTopic", state.isOffTopic ? "Back" : "Off Topic", state.isOffTopic ? "Return to the agenda topic" : "Track time as off topic", toggleOffTopic, state.isOffTopic ? "primary" : "danger"));
+  row.appendChild(controlButton("pause", "Pause", "Pause meeting timer", pauseMeeting));
+  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -245,8 +245,8 @@ function renderPaused() {
   panel.appendChild(heading("h2", "Paused", "meeting-controls-title"));
   panel.appendChild(paragraph("Timing is paused. Resume to continue the current segment.", "muted meeting-controls-note"));
   var row = div("button-row meeting-controls-row paused-controls-row");
-  row.appendChild(controlButton("▶", "Resume", "Resume meeting timer", resumeMeeting, "primary"));
-  row.appendChild(controlButton("■", "End", "End meeting", endMeeting));
+  row.appendChild(controlButton("play", "Resume", "Resume meeting timer", resumeMeeting, "primary"));
+  row.appendChild(controlButton("stop", "End", "End meeting", endMeeting));
   panel.appendChild(row);
   side.appendChild(panel);
   side.appendChild(renderCustomizer());
@@ -868,20 +868,38 @@ function button(text, onClick, className, options) {
   });
   return el;
 }
-function controlButton(icon, label, ariaLabel, onClick, className, options) {
+function controlButton(iconName, label, ariaLabel, onClick, className, options) {
   var el = button("", onClick, "control-button " + (className || ""), options);
   el.setAttribute("aria-label", ariaLabel || label);
-  el.title = ariaLabel || label;
   var iconEl = document.createElement("span");
   iconEl.className = "control-icon";
   iconEl.setAttribute("aria-hidden", "true");
-  iconEl.textContent = icon;
+  iconEl.appendChild(iconSvg(iconName));
   var labelEl = document.createElement("span");
   labelEl.className = "control-label";
   labelEl.textContent = label;
   el.appendChild(iconEl);
   el.appendChild(labelEl);
   return el;
+}
+
+function iconSvg(name) {
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("focusable", "false");
+  svg.setAttribute("aria-hidden", "true");
+  var paths = {
+    check: "M5 12.5l4.2 4.2L19 6.9",
+    offTopic: "M12 4v16M4 12h16M7.8 7.8l8.4 8.4M16.2 7.8l-8.4 8.4",
+    undo: "M9 7H5v4M5 7l5.5 5.5A5 5 0 1 0 14 4",
+    pause: "M8 5v14M16 5v14",
+    play: "M8 5v14l11-7z",
+    stop: "M7 7h10v10H7z"
+  };
+  var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("d", paths[name] || paths.check);
+  svg.appendChild(path);
+  return svg;
 }
 function textAction(text, onClick, className) { return button(text, onClick, "text-action " + (className || "")); }
 
