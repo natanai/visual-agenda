@@ -619,7 +619,7 @@ function blockObject(id, type, title, status, plannedSeconds, actualSeconds, vis
 
 function offTopicBlock(segment) {
   var actual = getSegmentDuration(segment);
-  return blockObject(segment.id, "offTopic", "Off topic", "off-topic", 0, actual, actual, 100);
+  return blockObject(segment.id, "offTopic", "Off topic", "off-topic", 0, actual, actual, 0);
 }
 
 function withHeights(blocks) {
@@ -787,7 +787,9 @@ function manageTimer() {
   if (state.mode === "running" && !timerId) {
     timerId = setInterval(function () {
       state.now = Date.now();
-      if (!isCustomizerControlActive()) {
+      if (isCustomizerControlActive()) {
+        refreshAgendaPanel();
+      } else {
         render();
       }
     }, 500);
@@ -796,6 +798,16 @@ function manageTimer() {
     clearInterval(timerId);
     timerId = null;
   }
+}
+
+function refreshAgendaPanel() {
+  var agendaPanel = document.querySelector(".agenda-panel");
+  if (!agendaPanel) {
+    render();
+    return;
+  }
+  agendaPanel.textContent = "";
+  agendaPanel.appendChild(renderAgendaStack());
 }
 
 function formatDuration(seconds) {
